@@ -337,7 +337,7 @@ public class DeviceControlActivity extends Activity {
 				*/
 //chuck 说多传感器要 分时读取，不太明白啥意思
 //试试密码保存了么
-				//lixian
+				//离线
 			if(accCharacteristic[0] != null)
 			{
 				mBluetoothLeService.readCharacteristic(accCharacteristic[0]);
