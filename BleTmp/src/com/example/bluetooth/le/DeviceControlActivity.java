@@ -335,7 +335,7 @@ public class DeviceControlActivity extends Activity {
 //							mNotifyCharacteristic, true);
 			}
 				*/
-			
+//chuck 说多传感器要 分时读取，不太明白啥意思
 			if(accCharacteristic[0] != null)
 			{
 				mBluetoothLeService.readCharacteristic(accCharacteristic[0]);
