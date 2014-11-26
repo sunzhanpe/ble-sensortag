@@ -646,19 +646,6 @@ public class DeviceControlActivity extends Activity {
 					irtCharacteristic[2] = gattCharacteristic;
 				}
 				
-				currentCharaData.put(
-						LIST_NAME, SampleGattAttributes.lookup(uuid, unknownCharaString));
-				currentCharaData.put(LIST_UUID, uuid);
-				gattCharacteristicGroupData.add(currentCharaData);
-			}
-			
-			for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
-				charas.add(gattCharacteristic);
-				HashMap<String, String> currentCharaData = new HashMap<String, String>();
-				uuid = gattCharacteristic.getUuid().toString();
-//				if(uuid.equals(TEST_UUID_CONFIG.toString())){                	
-//					fff5 = gattCharacteristic;
-//				}
 				if(uuid.equals(UUID_ACC_DATA.toString())){                	
 					accCharacteristic[0] = gattCharacteristic;
 				}
@@ -674,6 +661,7 @@ public class DeviceControlActivity extends Activity {
 				currentCharaData.put(LIST_UUID, uuid);
 				gattCharacteristicGroupData.add(currentCharaData);
 			}
+			
 			
 			
 			mGattCharacteristics.add(charas);
