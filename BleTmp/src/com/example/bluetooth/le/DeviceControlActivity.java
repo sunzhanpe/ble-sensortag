@@ -343,12 +343,12 @@ public class DeviceControlActivity extends Activity {
 				 buffer1 = accCharacteristic[0].getValue();
 	            if (buffer1 != null && buffer1.length > 0) {
 	            	double accx,accy,accz;
-	            	accx = (int)buffer1[0];
-	            	accy = (int)buffer1[1];
-	            	accz = (int)buffer1[2];
-	            	Spannable WordtoSpan3 = new SpannableString("加速度x轴： "+String.format("%.2f", accx)+"g"+"\n"+
-	            												"y轴："+String.format("%.2f", accy)+"g"+"\n"+
-	            												"z轴"+String.format("%.2f", accz)+"g");          
+	            	accx = (double)buffer1[0];
+	            	accy = (double)buffer1[1];
+	            	accz = (double)buffer1[2];
+	            	Spannable WordtoSpan3 = new SpannableString("加速度x轴： "+String.format("%.5f", accx)+"g"+"\n"+
+	            												"y轴："+String.format("%.5f", accy)+"g"+"\n"+
+	            												"z轴："+String.format("%.5f", accz)+"g");          
 		            WordtoSpan3.setSpan(new AbsoluteSizeSpan(50), 0, WordtoSpan3.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);		            
 		            tv3.setText(WordtoSpan3);
 	            }
