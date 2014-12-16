@@ -51,19 +51,24 @@
 
     </LinearLayout>
 
-    
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="温度" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="加速度" />
 	
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:orientation="vertical" >
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="297dp"
-        android:layout_height="156dp"
-        android:text="2345"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        <TextView android:id="@+id/textView1" android:layout_width="297dp" android:layout_height="156dp" android:text="2345" android:textAppearance="?android:attr/textAppearanceLarge"/>
     <Space
             android:layout_width="5dp"
             android:layout_height="wrap_content" />

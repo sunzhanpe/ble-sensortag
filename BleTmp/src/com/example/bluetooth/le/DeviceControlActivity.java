@@ -91,9 +91,10 @@ public class DeviceControlActivity extends Activity {
 //	private Thread irtThread;
 //	private Thread accThread;
 	
-	private BluetoothGattCharacteristic fff5 ;
+//	private BluetoothGattCharacteristic fff5 ;
 	private BluetoothGattCharacteristic[] irtCharacteristic = new BluetoothGattCharacteristic[3];
 	private BluetoothGattCharacteristic[] accCharacteristic = new BluetoothGattCharacteristic[3];
+	private int flag =1;//默认0,1代表温度，2代表加速度。
 			public static UUID TEST_UUID_CONFIG = fromString("0000fff5-0000-1000-8000-00805f9b34fb");
 
 	  public final static UUID 
@@ -265,7 +266,8 @@ public class DeviceControlActivity extends Activity {
 	Handler handler=new Handler(){
 		public void handleMessage(android.os.Message msg) {
 			if(msg.what==0){			
-				
+				if(1 == flag)
+				{
 				if (irtCharacteristic[0] != null) {
 //					mBluetoothLeService.setCharacteristicNotification(
 //							mNotifyCharacteristic, false);
@@ -320,26 +322,28 @@ public class DeviceControlActivity extends Activity {
 //					mBluetoothLeService.setCharacteristicNotification(
 //							mNotifyCharacteristic, true);
 			}
+			}
 				//	((TextView) findViewById(R.id.device_address)).setText(""+i++);
 				//tv.setText(""+i++);
 			
-				if (fff5 != null) {
-//					mBluetoothLeService.setCharacteristicNotification(
-//							mNotifyCharacteristic, false);
-				mBluetoothLeService.readCharacteristic(fff5);
-				 buffer = fff5.getValue();
-	            if (buffer != null && buffer.length > 0) {
-	                final StringBuilder stringBuilder = new StringBuilder(buffer.length);
-	                for(byte byteChar : buffer)
-	                    stringBuilder.append(String.format("%02X ", byteChar));
-	                tv1.append(stringBuilder.toString());
-	            }
-//					mBluetoothLeService.setCharacteristicNotification(
-//							mNotifyCharacteristic, true);
-			}
+//				if (fff5 != null) {
+////					mBluetoothLeService.setCharacteristicNotification(
+////							mNotifyCharacteristic, false);
+//				mBluetoothLeService.readCharacteristic(fff5);
+//				 buffer = fff5.getValue();
+//	            if (buffer != null && buffer.length > 0) {
+//	                final StringBuilder stringBuilder = new StringBuilder(buffer.length);
+//	                for(byte byteChar : buffer)
+//	                    stringBuilder.append(String.format("%02X ", byteChar));
+//	                tv1.append(stringBuilder.toString());
+//	            }
+////					mBluetoothLeService.setCharacteristicNotification(
+////							mNotifyCharacteristic, true);
+//			}
 				
 //chuck 说多传感器要 分时读取，不太明白啥意思
-
+			else if(2 == flag)
+			{
 			if(accCharacteristic[0] != null)
 			{
 				mBluetoothLeService.readCharacteristic(accCharacteristic[0]);
@@ -355,6 +359,7 @@ public class DeviceControlActivity extends Activity {
 		            WordtoSpan3.setSpan(new AbsoluteSizeSpan(50), 0, WordtoSpan3.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);		            
 		            tv3.setText(WordtoSpan3);
 	            }
+			}
 			}
 			}
 		};
@@ -385,7 +390,8 @@ public class DeviceControlActivity extends Activity {
 		bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
 		Button button3=(Button)findViewById(R.id.button3);  
-
+		Button button2 = (Button)findViewById(R.id.button2);
+		Button button1 = (Button)findViewById(R.id.button1);
 
 		tv1=(TextView)findViewById(R.id.textView1);
 		tv2=(TextView)findViewById(R.id.textView2);
@@ -439,45 +445,26 @@ public class DeviceControlActivity extends Activity {
 			}
 		});*/
 ///*		//使用匿名类注册Button事件  
-//		button1.setOnClickListener(new OnClickListener()  
-//		{         
-//			public void onClick(View v) {
-//				((TextView) findViewById(R.id.device_address))
-//				.setText("" + i++);
-//				if (fff5 != null) {
-//					//					mBluetoothLeService.setCharacteristicNotification(
-//					//							mNotifyCharacteristic, false);
-//					mBluetoothLeService.readCharacteristic(fff5);
-//					buffer = fff5.getValue();
-//					if (buffer != null && buffer.length > 0) {
-//						final StringBuilder stringBuilder = new StringBuilder(buffer.length);
-//						for(byte byteChar : buffer)
-//							stringBuilder.append(String.format("%02X ", byteChar));
-//						((TextView) findViewById(R.id.device_address)).setText(stringBuilder.toString());
-//					}
-//					//					mBluetoothLeService.setCharacteristicNotification(
-//					//							mNotifyCharacteristic, true);
-//				}
-//			}
-//		});   
-//		//使用匿名类注册Button事件  
-//		button2.setOnClickListener(new OnClickListener()  
-//		{         
-//			public void onClick(View v) {
-//				((TextView) findViewById(R.id.device_address))
-//				.setText("" + i++);
-//				if (fff5 != null) {
-//					buffer[3]++;
-//					fff5.setValue(buffer);
-//					mBluetoothLeService.writeCharacteristic(fff5);
-//				}
-//			}
-//		}); */
+		button1.setOnClickListener(new OnClickListener()  
+		{         
+			public void onClick(View v) {
+				flag = 1; //1代表温度传感器
+			}
+		});   
+
+		button2.setOnClickListener(new OnClickListener()  
+		{         
+			public void onClick(View v) {
+				flag = 2; //2代表加速度传感器
+				Log.i("sunzhangg", String.valueOf(flag));
+			}
+		}); 
 		//使用匿名类注册Button事件  
 		button3.setOnClickListener(new OnClickListener()  
 		{         
 			public void onClick(View v) {
-				
+				if(1 == flag)
+				{
 //				((TextView) findViewById(R.id.device_address))
 //				.setText("accEnable" + i++);
 				if (irtCharacteristic[1] != null) {
@@ -502,7 +489,9 @@ public class DeviceControlActivity extends Activity {
 //					mBluetoothLeService.setCharacteristicNotification(
 //							mNotifyCharacteristic, true);
 			}
-			
+			}
+				else if(2 == flag)
+				{
 				if (accCharacteristic[1] != null) {
 //								mBluetoothLeService.setCharacteristicNotification(
 //										mNotifyCharacteristic, false);
@@ -524,6 +513,7 @@ public class DeviceControlActivity extends Activity {
 				mBluetoothLeService.writeCharacteristic(accCharacteristic[2]);
 //								mBluetoothLeService.setCharacteristicNotification(
 //										mNotifyCharacteristic, true);
+			}
 			}
 						
 					
@@ -610,18 +600,17 @@ public class DeviceControlActivity extends Activity {
 	// Demonstrates how to iterate through the supported GATT Services/Characteristics.
 	// In this sample, we populate the data structure that is bound to the ExpandableListView
 	// on the UI.
-	String uuid = null;
-	Runnable runnable;
+	
+
 	private void displayGattServices(List<BluetoothGattService> gattServices) {
 		if (gattServices == null) return;
-		
+		String uuid = null;
 		String unknownServiceString = getResources().getString(R.string.unknown_service);
 		String unknownCharaString = getResources().getString(R.string.unknown_characteristic);
 		ArrayList<HashMap<String, String>> gattServiceData = new ArrayList<HashMap<String, String>>();
 		ArrayList<ArrayList<HashMap<String, String>>> gattCharacteristicData
 		= new ArrayList<ArrayList<HashMap<String, String>>>();
 		mGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
-
 		// Loops through available GATT Services.
 		for (BluetoothGattService gattService : gattServices) {
 			HashMap<String, String> currentServiceData = new HashMap<String, String>();
@@ -633,22 +622,25 @@ public class DeviceControlActivity extends Activity {
 
 			ArrayList<HashMap<String, String>> gattCharacteristicGroupData =
 					new ArrayList<HashMap<String, String>>();
-			List<BluetoothGattCharacteristic> gattCharacteristics =
-					gattService.getCharacteristics();
+			List<BluetoothGattCharacteristic> gattCharacteristics = 
+					(gattService.getCharacteristics());
 			ArrayList<BluetoothGattCharacteristic> charas =
 					new ArrayList<BluetoothGattCharacteristic>();
 
 			// Loops through available Characteristics.
-			for (final BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+			for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
 				charas.add(gattCharacteristic);
 				HashMap<String, String> currentCharaData = new HashMap<String, String>();
 				uuid = gattCharacteristic.getUuid().toString();
-				if(uuid.equals(TEST_UUID_CONFIG.toString())){                	
-					fff5 = gattCharacteristic;
-				}
+//				if(uuid.equals(TEST_UUID_CONFIG.toString())){                	
+//					fff5 = gattCharacteristic;
+//				}
 				
+				if(2 == flag)
+				{
 				if(uuid.equals(UUID_ACC_DATA.toString())){                	
 					accCharacteristic[0] = gattCharacteristic;
+					Log.i("sunzhan", "read out"+String.valueOf(flag));
 				}
 				if(uuid.equals(UUID_ACC_CONF.toString())){                	
 					accCharacteristic[1] = gattCharacteristic;
@@ -656,72 +648,25 @@ public class DeviceControlActivity extends Activity {
 				if(uuid.equals(UUID_ACC_PERI.toString())){                	
 					accCharacteristic[2] = gattCharacteristic;
 				}
+				}
 //				
-//				if(uuid.equals(UUID_IRT_DATA.toString())){                	
-//					irtCharacteristic[0] = gattCharacteristic;
-//				}
-//				if(uuid.equals(UUID_IRT_CONF.toString())){                	
-//					irtCharacteristic[1] = gattCharacteristic;
-//				}
-//				if(uuid.equals(UUID_IRT_PERI.toString())){                	
-//					irtCharacteristic[2] = gattCharacteristic;
-//				}
-				 new Thread() {
-			        // 重写run()方法，此方法在新的线程中运行
-			        @Override
-			        public void run() {
-			        	
-			            try {
-			            	if(uuid.equals(UUID_IRT_DATA.toString())){                	
-								irtCharacteristic[0] = gattCharacteristic;
-							}
-							if(uuid.equals(UUID_IRT_CONF.toString())){                	
-								irtCharacteristic[1] = gattCharacteristic;
-							}
-							if(uuid.equals(UUID_IRT_PERI.toString())){                	
-								irtCharacteristic[2] = gattCharacteristic;
-							}
-			               
-			            } catch (Exception e) {
-			                Toast.makeText(getApplicationContext(), "fail to show irt", Toast.LENGTH_LONG).show();
-			                return;
-			            }
-  
-			        }
-			    }.start();
-				
-				
-//			    new Thread(){
-//			        // 重写run()方法，此方法在新的线程中运行
-//			        @Override
-//			        public void run() {
-//			        	try
-//						{
-//							Thread.sleep(300);
-//						} catch (InterruptedException e1)
-//						{
-//							// TODO Auto-generated catch block
-//							e1.printStackTrace();
-//						}
-//			        	if(uuid.equals(UUID_ACC_DATA.toString())){                	
-//							accCharacteristic[0] = gattCharacteristic;
-//						}
-//						if(uuid.equals(UUID_ACC_CONF.toString())){                	
-//							accCharacteristic[1] = gattCharacteristic;
-//						}
-//						if(uuid.equals(UUID_ACC_PERI.toString())){                	
-//							accCharacteristic[2] = gattCharacteristic;
-//						}
-//			            try {
-//			               
-//			            } catch (Exception e) {
-//			                Toast.makeText(getApplicationContext(), "fail to show acc", Toast.LENGTH_LONG).show();
-//			                return;
-//			            }
-//  
-//			        }
-//			    }.start();
-			    
+				else if(1 == flag)
+				{
+				if(uuid.equals(UUID_IRT_DATA.toString())){                	
+					irtCharacteristic[0] = gattCharacteristic;
+					Log.i("sunzhan", "read out"+String.valueOf(flag));
+					//Log.i("sunzhan", "read out");
+				}
+				if(uuid.equals(UUID_IRT_CONF.toString())){                	
+					irtCharacteristic[1] = gattCharacteristic;
+					//Log.i("sunzhan", "read out");
+				}
+				if(uuid.equals(UUID_IRT_PERI.toString())){                	
+					irtCharacteristic[2] = gattCharacteristic;
+					//Log.i("sunzhan", "read out");
+				}
+				}
+
 				
 				
 				currentCharaData.put(
@@ -729,6 +674,7 @@ public class DeviceControlActivity extends Activity {
 				currentCharaData.put(LIST_UUID, uuid);
 				gattCharacteristicGroupData.add(currentCharaData);
 			}
+			
 			
 			
 			
