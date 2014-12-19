@@ -94,7 +94,7 @@ public class DeviceControlActivity extends Activity {
 //	private BluetoothGattCharacteristic fff5 ;
 	private BluetoothGattCharacteristic[] irtCharacteristic = new BluetoothGattCharacteristic[3];
 	private BluetoothGattCharacteristic[] accCharacteristic = new BluetoothGattCharacteristic[3];
-	private int flag =1;//默认0,1代表温度，2代表加速度。
+	public static int flag =1;//默认0,1代表温度，2代表加速度。
 			public static UUID TEST_UUID_CONFIG = fromString("0000fff5-0000-1000-8000-00805f9b34fb");
 
 	  public final static UUID 
