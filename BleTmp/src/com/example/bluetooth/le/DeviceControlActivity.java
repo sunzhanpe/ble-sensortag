@@ -94,7 +94,8 @@ public class DeviceControlActivity extends Activity {
 //	private BluetoothGattCharacteristic fff5 ;
 	private BluetoothGattCharacteristic[] irtCharacteristic = new BluetoothGattCharacteristic[3];
 	private BluetoothGattCharacteristic[] accCharacteristic = new BluetoothGattCharacteristic[3];
-	public static int flag =1;//默认0,1代表温度，2代表加速度。
+	private BluetoothGattCharacteristic[] humCharacteristic = new BluetoothGattCharacteristic[3];
+	public static int flag =1;//默认1,1代表温度，2代表加速度，3代表湿度
 			public static UUID TEST_UUID_CONFIG = fromString("0000fff5-0000-1000-8000-00805f9b34fb");
 
 	  public final static UUID 
@@ -262,6 +263,7 @@ public class DeviceControlActivity extends Activity {
 	int i = 0;
 	byte buffer[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
 	byte buffer1[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
+	byte buffer2[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
 	ImageView imageView ;
 	Handler handler=new Handler(){
 		public void handleMessage(android.os.Message msg) {
@@ -361,14 +363,36 @@ public class DeviceControlActivity extends Activity {
 	            }
 			}
 			}
+			else if(3 == flag)
+			{
+				if(humCharacteristic[0] != null)
+				{
+					mBluetoothLeService.readCharacteristic(humCharacteristic[0]);
+					buffer2 = humCharacteristic[0].getValue();
+					if(buffer2 != null && buffer2.length >0)
+					{
+						double hum;
+						int a = shortUnsignedAtOffset(buffer2,2);
+			            a = a- (a % 4);
+			            hum = (-6f) + 125f * (a / 65535f);
+			            Spannable WordtoSpan4 = new SpannableString("环境湿度： "+String.format("%.2f", hum)+"%");          
+			            WordtoSpan4.setSpan(new AbsoluteSizeSpan(50), 0, WordtoSpan4.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			            // WordtoSpan.setSpan(new ForegroundColorSpan(Color.BLUE), 15, 30, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);  
+			            tv4.setText(WordtoSpan4);
+					}
+					
+				}
+				
+			}
 			}
 		};
 	};
 
 
-	TextView tv1;
-	TextView tv2;
-	TextView tv3;
+	TextView tv1; //irt
+	TextView tv2; //irt
+	TextView tv3; //acc
+	TextView tv4; //hum
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -392,10 +416,12 @@ public class DeviceControlActivity extends Activity {
 		Button button3=(Button)findViewById(R.id.button3);  
 		Button button2 = (Button)findViewById(R.id.button2);
 		Button button1 = (Button)findViewById(R.id.button1);
+		Button button4 = (Button)findViewById(R.id.button4);
 
 		tv1=(TextView)findViewById(R.id.textView1);
 		tv2=(TextView)findViewById(R.id.textView2);
 		tv3=(TextView)findViewById(R.id.textView3);
+		tv4=(TextView)findViewById(R.id.textView4);
 		
         
 //        imageView=(ImageView)findViewById(R.id.imageView1);
@@ -459,62 +485,89 @@ public class DeviceControlActivity extends Activity {
 				Log.i("sunzhangg", String.valueOf(flag));
 			}
 		}); 
+		button4.setOnClickListener(new OnClickListener()  
+		{         
+			public void onClick(View v) {
+				flag = 3; //1代表温度传感器
+			}
+		});   
 		//使用匿名类注册Button事件  
 		button3.setOnClickListener(new OnClickListener()  
 		{         
 			public void onClick(View v) {
 				if(1 == flag)
 				{
-//				((TextView) findViewById(R.id.device_address))
-//				.setText("accEnable" + i++);
-				if (irtCharacteristic[1] != null) {
-//					mBluetoothLeService.setCharacteristicNotification(
-//							mNotifyCharacteristic, false);
-				byte[] data = new byte[1];
-				data[0] = 1;
-				irtCharacteristic[1].setValue(data);
-
-				mBluetoothLeService.writeCharacteristic(irtCharacteristic[1]);
-//					mBluetoothLeService.setCharacteristicNotification(
-//							mNotifyCharacteristic, true);
-			}
-				if (irtCharacteristic[2] != null) {
-//					mBluetoothLeService.setCharacteristicNotification(
-//							mNotifyCharacteristic, false);
-				byte[] data = new byte[2];
-				data[0] = 5;
-				irtCharacteristic[2].setValue(data);
-
-				mBluetoothLeService.writeCharacteristic(irtCharacteristic[2]);
-//					mBluetoothLeService.setCharacteristicNotification(
-//							mNotifyCharacteristic, true);
-			}
-			}
+	//				((TextView) findViewById(R.id.device_address))
+	//				.setText("accEnable" + i++);
+					if (irtCharacteristic[1] != null) {
+	//					mBluetoothLeService.setCharacteristicNotification(
+	//							mNotifyCharacteristic, false);
+					byte[] data = new byte[1];
+					data[0] = 1;
+					irtCharacteristic[1].setValue(data);
+	
+					mBluetoothLeService.writeCharacteristic(irtCharacteristic[1]);
+	//					mBluetoothLeService.setCharacteristicNotification(
+	//							mNotifyCharacteristic, true);
+						}
+					if (irtCharacteristic[2] != null) {
+	//					mBluetoothLeService.setCharacteristicNotification(
+	//							mNotifyCharacteristic, false);
+					byte[] data = new byte[2];
+					data[0] = 5;
+					irtCharacteristic[2].setValue(data);
+	
+					mBluetoothLeService.writeCharacteristic(irtCharacteristic[2]);
+	//					mBluetoothLeService.setCharacteristicNotification(
+	//							mNotifyCharacteristic, true);
+						}
+				}
 				else if(2 == flag)
 				{
-				if (accCharacteristic[1] != null) {
-//								mBluetoothLeService.setCharacteristicNotification(
-//										mNotifyCharacteristic, false);
-				byte[] data = new byte[1];
-				data[0] = 1;
-				accCharacteristic[1].setValue(data);
-
-				mBluetoothLeService.writeCharacteristic(accCharacteristic[1]);
-//								mBluetoothLeService.setCharacteristicNotification(
-//										mNotifyCharacteristic, true);
-			}
-				if (accCharacteristic[2] != null) {
-//								mBluetoothLeService.setCharacteristicNotification(
-//										mNotifyCharacteristic, false);
-				byte[] data = new byte[2];
-				data[0] = 10;
-				accCharacteristic[2].setValue(data);
-
-				mBluetoothLeService.writeCharacteristic(accCharacteristic[2]);
-//								mBluetoothLeService.setCharacteristicNotification(
-//										mNotifyCharacteristic, true);
-			}
-			}
+					if (accCharacteristic[1] != null) {
+	//								mBluetoothLeService.setCharacteristicNotification(
+	//										mNotifyCharacteristic, false);
+					byte[] data = new byte[1];
+					data[0] = 1;
+					accCharacteristic[1].setValue(data);
+	
+					mBluetoothLeService.writeCharacteristic(accCharacteristic[1]);
+	//								mBluetoothLeService.setCharacteristicNotification(
+	//										mNotifyCharacteristic, true);
+								}
+					if (accCharacteristic[2] != null) {
+	//								mBluetoothLeService.setCharacteristicNotification(
+	//										mNotifyCharacteristic, false);
+					byte[] data = new byte[2];
+					data[0] = 10;
+					accCharacteristic[2].setValue(data);
+	
+					mBluetoothLeService.writeCharacteristic(accCharacteristic[2]);
+	//								mBluetoothLeService.setCharacteristicNotification(
+	//										mNotifyCharacteristic, true);
+								}
+				}
+				else if(3 == flag)
+				{
+					if (humCharacteristic[1] != null) 
+					{
+						
+						byte[] data = new byte[1];
+						data[0] = 1;
+						humCharacteristic[1].setValue(data);
+						mBluetoothLeService.writeCharacteristic(humCharacteristic[1]);
+		
+					}
+					if (humCharacteristic[2] != null) 
+					{
+		
+						byte[] data = new byte[2];
+						data[0] = 10;
+						humCharacteristic[2].setValue(data);
+						mBluetoothLeService.writeCharacteristic(humCharacteristic[2]);
+				
+					}
+				}
 						
 					
 				
@@ -638,33 +691,49 @@ public class DeviceControlActivity extends Activity {
 				
 				if(2 == flag)
 				{
-				if(uuid.equals(UUID_ACC_DATA.toString())){                	
-					accCharacteristic[0] = gattCharacteristic;
-					Log.i("sunzhan", "read out"+String.valueOf(flag));
-				}
-				if(uuid.equals(UUID_ACC_CONF.toString())){                	
-					accCharacteristic[1] = gattCharacteristic;
-				}
-				if(uuid.equals(UUID_ACC_PERI.toString())){                	
-					accCharacteristic[2] = gattCharacteristic;
-				}
+					if(uuid.equals(UUID_ACC_DATA.toString())){                	
+						accCharacteristic[0] = gattCharacteristic;
+						Log.i("sunzhan", "read out"+String.valueOf(flag));
+					}
+					if(uuid.equals(UUID_ACC_CONF.toString())){                	
+						accCharacteristic[1] = gattCharacteristic;
+					}
+					if(uuid.equals(UUID_ACC_PERI.toString())){                	
+						accCharacteristic[2] = gattCharacteristic;
+					}
 				}
 //				
 				else if(1 == flag)
 				{
-				if(uuid.equals(UUID_IRT_DATA.toString())){                	
-					irtCharacteristic[0] = gattCharacteristic;
-					Log.i("sunzhan", "read out"+String.valueOf(flag));
-					//Log.i("sunzhan", "read out");
+					if(uuid.equals(UUID_IRT_DATA.toString())){                	
+						irtCharacteristic[0] = gattCharacteristic;
+						Log.i("sunzhan", "read out"+String.valueOf(flag));
+						//Log.i("sunzhan", "read out");
+					}
+					if(uuid.equals(UUID_IRT_CONF.toString())){                	
+						irtCharacteristic[1] = gattCharacteristic;
+						//Log.i("sunzhan", "read out");
+					}
+					if(uuid.equals(UUID_IRT_PERI.toString())){                	
+						irtCharacteristic[2] = gattCharacteristic;
+						//Log.i("sunzhan", "read out");
+					}
 				}
-				if(uuid.equals(UUID_IRT_CONF.toString())){                	
-					irtCharacteristic[1] = gattCharacteristic;
-					//Log.i("sunzhan", "read out");
-				}
-				if(uuid.equals(UUID_IRT_PERI.toString())){                	
-					irtCharacteristic[2] = gattCharacteristic;
-					//Log.i("sunzhan", "read out");
-				}
+				else if(3 == flag)
+				{
+					if(uuid.equals(UUID_HUM_DATA.toString())){                	
+						humCharacteristic[0] = gattCharacteristic;
+						Log.i("sunzhan", "read out"+String.valueOf(flag));
+						//Log.i("sunzhan", "read out");
+					}
+					if(uuid.equals(UUID_HUM_CONF.toString())){                	
+						humCharacteristic[1] = gattCharacteristic;
+						//Log.i("sunzhan", "read out");
+					}
+					if(uuid.equals(UUID_HUM_PERI.toString())){                	
+						humCharacteristic[2] = gattCharacteristic;
+						//Log.i("sunzhan", "read out");
+					}
 				}
 
 				

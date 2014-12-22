@@ -65,6 +65,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="加速度" />
+    
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="湿度" />
 	
     <LinearLayout
         android:layout_width="match_parent"
@@ -85,9 +91,15 @@
         android:id="@+id/textView3"
         android:layout_width="297dp"
         android:layout_height="156dp"
-        android:text="6789"
+        android:text="acc"
         android:textAppearance="?android:attr/textAppearanceLarge" />
     
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="297dp"
+        android:layout_height="156dp"
+        android:text="shidu"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
      </LinearLayout>
     
     
