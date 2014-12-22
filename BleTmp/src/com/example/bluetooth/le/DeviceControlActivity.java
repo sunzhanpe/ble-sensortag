@@ -95,7 +95,8 @@ public class DeviceControlActivity extends Activity {
 	private BluetoothGattCharacteristic[] irtCharacteristic = new BluetoothGattCharacteristic[3];
 	private BluetoothGattCharacteristic[] accCharacteristic = new BluetoothGattCharacteristic[3];
 	private BluetoothGattCharacteristic[] humCharacteristic = new BluetoothGattCharacteristic[3];
-	public static int flag =1;//默认1,1代表温度，2代表加速度，3代表湿度
+	private BluetoothGattCharacteristic[] magCharacteristic = new BluetoothGattCharacteristic[3];
+	public static int flag =1;//默认1,1代表温度，2代表加速度，3代表湿度,4代表磁力计(mag),
 			public static UUID TEST_UUID_CONFIG = fromString("0000fff5-0000-1000-8000-00805f9b34fb");
 
 	  public final static UUID 
@@ -264,6 +265,7 @@ public class DeviceControlActivity extends Activity {
 	byte buffer[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
 	byte buffer1[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
 	byte buffer2[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
+	byte buffer3[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
 	ImageView imageView ;
 	Handler handler=new Handler(){
 		public void handleMessage(android.os.Message msg) {
@@ -384,6 +386,26 @@ public class DeviceControlActivity extends Activity {
 				}
 				
 			}
+			else if(4 == flag)
+			{
+				if(magCharacteristic[0] != null)
+				{
+					mBluetoothLeService.readCharacteristic(magCharacteristic[0]);
+					buffer3 = magCharacteristic[0].getValue();
+					if(buffer3 != null && buffer3.length >0)
+					{
+						float x = shortSignedAtOffset(buffer3, 0) * (2000f / 65536f) * -1;
+		                float y = shortSignedAtOffset(buffer3, 2) * (2000f / 65536f) * -1;
+		                float z = shortSignedAtOffset(buffer3, 4) * (2000f / 65536f);
+		            	Spannable WordtoSpan5 = new SpannableString("磁力计x轴： "+String.format("%.6f", x)+"\n"+
+		            												"y轴："+String.format("%.6f", y)+"\n"+
+		            												"z轴: "+String.format("%.6f", z));          
+		            	WordtoSpan5.setSpan(new AbsoluteSizeSpan(50), 0, WordtoSpan5.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);		            
+			            tv5.setText(WordtoSpan5);
+					}
+					
+				}
+			}
 			}
 		};
 	};
@@ -393,6 +415,7 @@ public class DeviceControlActivity extends Activity {
 	TextView tv2; //irt
 	TextView tv3; //acc
 	TextView tv4; //hum
+	TextView tv5; //mag
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -417,11 +440,13 @@ public class DeviceControlActivity extends Activity {
 		Button button2 = (Button)findViewById(R.id.button2);
 		Button button1 = (Button)findViewById(R.id.button1);
 		Button button4 = (Button)findViewById(R.id.button4);
+		Button button5 = (Button)findViewById(R.id.button5);
 
 		tv1=(TextView)findViewById(R.id.textView1);
 		tv2=(TextView)findViewById(R.id.textView2);
 		tv3=(TextView)findViewById(R.id.textView3);
 		tv4=(TextView)findViewById(R.id.textView4);
+		tv5=(TextView)findViewById(R.id.textView5);
 		
         
 //        imageView=(ImageView)findViewById(R.id.imageView1);
@@ -488,7 +513,13 @@ public class DeviceControlActivity extends Activity {
 		button4.setOnClickListener(new OnClickListener()  
 		{         
 			public void onClick(View v) {
-				flag = 3; //1代表温度传感器
+				flag = 3; //3代表湿度传感器
+			}
+		});
+		button5.setOnClickListener(new OnClickListener()  
+		{         
+			public void onClick(View v) {
+				flag = 4; //4代表磁力计传感器
 			}
 		});   
 		//使用匿名类注册Button事件  
@@ -568,7 +599,27 @@ public class DeviceControlActivity extends Activity {
 				
 					}
 				}
+				else if(4 == flag)
+				{
+					if (magCharacteristic[1] != null) 
+					{
 						
+						byte[] data = new byte[1];
+						data[0] = 1;
+						magCharacteristic[1].setValue(data);
+						mBluetoothLeService.writeCharacteristic(magCharacteristic[1]);
+		
+					}
+					if (magCharacteristic[2] != null) 
+					{
+		
+						byte[] data = new byte[2];
+						data[0] = 64;
+						magCharacteristic[2].setValue(data);
+						mBluetoothLeService.writeCharacteristic(magCharacteristic[2]);
+				
+					}
+				}		
 					
 				
 			
@@ -732,6 +783,22 @@ public class DeviceControlActivity extends Activity {
 					}
 					if(uuid.equals(UUID_HUM_PERI.toString())){                	
 						humCharacteristic[2] = gattCharacteristic;
+						//Log.i("sunzhan", "read out");
+					}
+				}
+				else if(4 == flag)
+				{
+					if(uuid.equals(UUID_MAG_DATA.toString())){                	
+						magCharacteristic[0] = gattCharacteristic;
+						Log.i("sunzhan", "read out"+String.valueOf(flag));
+						//Log.i("sunzhan", "read out");
+					}
+					if(uuid.equals(UUID_MAG_CONF.toString())){                	
+						magCharacteristic[1] = gattCharacteristic;
+						//Log.i("sunzhan", "read out");
+					}
+					if(uuid.equals(UUID_MAG_PERI.toString())){                	
+						magCharacteristic[2] = gattCharacteristic;
 						//Log.i("sunzhan", "read out");
 					}
 				}
