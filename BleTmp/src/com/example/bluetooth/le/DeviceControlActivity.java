@@ -96,6 +96,7 @@ public class DeviceControlActivity extends Activity {
 	private BluetoothGattCharacteristic[] accCharacteristic = new BluetoothGattCharacteristic[3];
 	private BluetoothGattCharacteristic[] humCharacteristic = new BluetoothGattCharacteristic[3];
 	private BluetoothGattCharacteristic[] magCharacteristic = new BluetoothGattCharacteristic[3];
+	private BluetoothGattCharacteristic[] gyrCharacteristic = new BluetoothGattCharacteristic[3];
 	public static int flag =1;//默认1,1代表温度，2代表加速度，3代表湿度,4代表磁力计(mag),
 			public static UUID TEST_UUID_CONFIG = fromString("0000fff5-0000-1000-8000-00805f9b34fb");
 
@@ -266,6 +267,7 @@ public class DeviceControlActivity extends Activity {
 	byte buffer1[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
 	byte buffer2[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
 	byte buffer3[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
+	byte buffer4[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
 	ImageView imageView ;
 	Handler handler=new Handler(){
 		public void handleMessage(android.os.Message msg) {
@@ -406,6 +408,27 @@ public class DeviceControlActivity extends Activity {
 					
 				}
 			}
+				
+			else if(5 == flag)
+			{
+				if(gyrCharacteristic[0] != null)
+				{
+					mBluetoothLeService.readCharacteristic(gyrCharacteristic[0]);
+					buffer4 = gyrCharacteristic[0].getValue();
+					if(buffer4 != null && buffer4.length >0)
+					{
+						float y = shortSignedAtOffset(buffer4, 0) * (500f / 65536f) * -1;
+		                float x = shortSignedAtOffset(buffer4, 2) * (500f / 65536f);
+		                float z = shortSignedAtOffset(buffer4, 4) * (500f / 65536f);
+		            	Spannable WordtoSpan6 = new SpannableString("陀螺仪x轴： "+String.format("%.6f", x)+"\n"+
+		            												"y轴："+String.format("%.6f", y)+"\n"+
+		            												"z轴: "+String.format("%.6f", z));          
+		            	WordtoSpan6.setSpan(new AbsoluteSizeSpan(50), 0, WordtoSpan6.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);		            
+			            tv6.setText(WordtoSpan6);
+					}
+					
+				}
+			}
 			}
 		};
 	};
@@ -416,6 +439,7 @@ public class DeviceControlActivity extends Activity {
 	TextView tv3; //acc
 	TextView tv4; //hum
 	TextView tv5; //mag
+	TextView tv6; //gyr
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -441,12 +465,14 @@ public class DeviceControlActivity extends Activity {
 		Button button1 = (Button)findViewById(R.id.button1);
 		Button button4 = (Button)findViewById(R.id.button4);
 		Button button5 = (Button)findViewById(R.id.button5);
+		Button button6 = (Button)findViewById(R.id.button6);
 
 		tv1=(TextView)findViewById(R.id.textView1);
 		tv2=(TextView)findViewById(R.id.textView2);
 		tv3=(TextView)findViewById(R.id.textView3);
 		tv4=(TextView)findViewById(R.id.textView4);
 		tv5=(TextView)findViewById(R.id.textView5);
+		tv6=(TextView)findViewById(R.id.textView6);
 		
         
 //        imageView=(ImageView)findViewById(R.id.imageView1);
@@ -465,36 +491,7 @@ public class DeviceControlActivity extends Activity {
 			};
 		}.start();
 
-		/*runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				while(true){
-
-
-					try {
-						Thread.sleep(1000);
-						handler.sendEmptyMessage(0);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					//    				if (fff5 != null) {
-					////    					mBluetoothLeService.setCharacteristicNotification(
-					////    							mNotifyCharacteristic, false);
-					//    					mBluetoothLeService.readCharacteristic(fff5);
-					//    					 buffer = fff5.getValue();
-					//    		            if (buffer != null && buffer.length > 0) {
-					//    		                final StringBuilder stringBuilder = new StringBuilder(buffer.length);
-					//    		                for(byte byteChar : buffer)
-					//    		                    stringBuilder.append(String.format("%02X ", byteChar));
-					//    						((TextView) findViewById(R.id.device_address)).setText(stringBuilder.toString());
-					//    		            }
-					////    					mBluetoothLeService.setCharacteristicNotification(
-					////    							mNotifyCharacteristic, true);
-					//    				}
-				}
-			}
-		});*/
+	
 ///*		//使用匿名类注册Button事件  
 		button1.setOnClickListener(new OnClickListener()  
 		{         
@@ -520,6 +517,12 @@ public class DeviceControlActivity extends Activity {
 		{         
 			public void onClick(View v) {
 				flag = 4; //4代表磁力计传感器
+			}
+		});
+		button6.setOnClickListener(new OnClickListener()  
+		{         
+			public void onClick(View v) {
+				flag = 5; //5代表陀螺仪传感器
 			}
 		});   
 		//使用匿名类注册Button事件  
@@ -620,7 +623,27 @@ public class DeviceControlActivity extends Activity {
 				
 					}
 				}		
-					
+				else if(5 == flag)
+				{
+					if (gyrCharacteristic[1] != null) 
+					{
+						
+						byte[] data = new byte[1];
+						data[0] = 7;  //7 才能显示x,y,z三个轴！
+						gyrCharacteristic[1].setValue(data);
+						mBluetoothLeService.writeCharacteristic(gyrCharacteristic[1]);
+		
+					}
+					if (gyrCharacteristic[2] != null) 
+					{
+		
+						byte[] data = new byte[2];
+						data[0] = 64;
+						gyrCharacteristic[2].setValue(data);
+						mBluetoothLeService.writeCharacteristic(gyrCharacteristic[2]);
+				
+					}
+				}			
 				
 			
 			}
@@ -799,6 +822,22 @@ public class DeviceControlActivity extends Activity {
 					}
 					if(uuid.equals(UUID_MAG_PERI.toString())){                	
 						magCharacteristic[2] = gattCharacteristic;
+						//Log.i("sunzhan", "read out");
+					}
+				}
+				else if(5 == flag)
+				{
+					if(uuid.equals(UUID_GYR_DATA.toString())){                	
+						gyrCharacteristic[0] = gattCharacteristic;
+						Log.i("sunzhan", "read out"+String.valueOf(flag));
+						//Log.i("sunzhan", "read out");
+					}
+					if(uuid.equals(UUID_GYR_CONF.toString())){                	
+						gyrCharacteristic[1] = gattCharacteristic;
+						//Log.i("sunzhan", "read out");
+					}
+					if(uuid.equals(UUID_GYR_PERI.toString())){                	
+						gyrCharacteristic[2] = gattCharacteristic;
 						//Log.i("sunzhan", "read out");
 					}
 				}
