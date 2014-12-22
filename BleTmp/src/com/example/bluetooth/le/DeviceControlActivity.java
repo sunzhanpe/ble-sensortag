@@ -60,6 +60,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+
+
+
+
 /**
  * For a given BLE device, this Activity provides the user interface to connect, display data,
  * and display GATT services and characteristics supported by the device.  The Activity
@@ -97,6 +101,7 @@ public class DeviceControlActivity extends Activity {
 	private BluetoothGattCharacteristic[] humCharacteristic = new BluetoothGattCharacteristic[3];
 	private BluetoothGattCharacteristic[] magCharacteristic = new BluetoothGattCharacteristic[3];
 	private BluetoothGattCharacteristic[] gyrCharacteristic = new BluetoothGattCharacteristic[3];
+	private BluetoothGattCharacteristic[] barCharacteristic = new BluetoothGattCharacteristic[4];
 	public static int flag =1;//默认1,1代表温度，2代表加速度，3代表湿度,4代表磁力计(mag),
 			public static UUID TEST_UUID_CONFIG = fromString("0000fff5-0000-1000-8000-00805f9b34fb");
 
@@ -268,6 +273,12 @@ public class DeviceControlActivity extends Activity {
 	byte buffer2[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
 	byte buffer3[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
 	byte buffer4[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
+	byte buffer5[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,
+	(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
+	
+	byte buffer6[] = new byte[]{(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31,(byte)0x31};
+	
+	private final int[] calibration = new int[8];
 	ImageView imageView ;
 	Handler handler=new Handler(){
 		public void handleMessage(android.os.Message msg) {
@@ -429,6 +440,54 @@ public class DeviceControlActivity extends Activity {
 					
 				}
 			}
+				
+			else if(6 == flag)
+			{
+				if(barCharacteristic[2] != null)
+				{
+					mBluetoothLeService.readCharacteristic(barCharacteristic[2]);
+					buffer5 = barCharacteristic[2].getValue();
+					if(buffer5 != null && buffer5.length >0)
+					{
+						for (int i=0; i<4; ++i) 
+						{
+				            calibration[i] = shortUnsignedAtOffset(buffer5, i * 2);
+				            calibration[i+4] = shortSignedAtOffset(buffer5, 8 + i * 2);
+				        }
+					}
+					
+				}
+			}
+			else if(7 == flag)
+			{
+				if(barCharacteristic[0] != null)
+				{
+					mBluetoothLeService.readCharacteristic(barCharacteristic[0]);
+					buffer6 = barCharacteristic[0].getValue();
+					if(buffer6 != null && buffer6.length >0)
+					{
+						final Integer t_r;	// Temperature raw value from sensor
+				        final Integer p_r;	// Pressure raw value from sensor
+				        final Double t_a; 	// Temperature actual value in unit centi degrees celsius
+				        final Double S;	// Interim value in calculation
+				        final Double O;	// Interim value in calculation
+				        final Double p_a; 	// Pressure actual value in unit Pascal.
+
+				        t_r = shortSignedAtOffset(buffer6, 0);
+				        p_r = shortUnsignedAtOffset(buffer6, 2);
+
+				        t_a = (100 * (calibration[0] * t_r / pow(2,8) + calibration[1] * pow(2,6))) / pow(2,16);
+				        S = calibration[2] + calibration[3] * t_r / pow(2,17) + ((calibration[4] * t_r / pow(2,15)) * t_r) / pow(2,19);
+				        O = calibration[5] * pow(2,14) + calibration[6] * t_r / pow(2,3) + ((calibration[7] * t_r / pow(2,15)) * t_r) / pow(2,4);
+				        p_a = (S * p_r + O) / pow(2,14);
+				        
+				        Spannable WordtoSpan7 = new SpannableString("气压： "+String.format("%.5f", p_a));          
+			            WordtoSpan7.setSpan(new AbsoluteSizeSpan(50), 0, WordtoSpan7.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			            // WordtoSpan.setSpan(new ForegroundColorSpan(Color.BLUE), 15, 30, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);  
+			            tv7.setText(WordtoSpan7);
+					}
+				}
+			}
 			}
 		};
 	};
@@ -440,6 +499,7 @@ public class DeviceControlActivity extends Activity {
 	TextView tv4; //hum
 	TextView tv5; //mag
 	TextView tv6; //gyr
+	TextView tv7; //bar
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -466,6 +526,8 @@ public class DeviceControlActivity extends Activity {
 		Button button4 = (Button)findViewById(R.id.button4);
 		Button button5 = (Button)findViewById(R.id.button5);
 		Button button6 = (Button)findViewById(R.id.button6);
+		Button button7 = (Button)findViewById(R.id.button7);
+		Button button8 = (Button)findViewById(R.id.button8);
 
 		tv1=(TextView)findViewById(R.id.textView1);
 		tv2=(TextView)findViewById(R.id.textView2);
@@ -473,6 +535,7 @@ public class DeviceControlActivity extends Activity {
 		tv4=(TextView)findViewById(R.id.textView4);
 		tv5=(TextView)findViewById(R.id.textView5);
 		tv6=(TextView)findViewById(R.id.textView6);
+		tv7=(TextView)findViewById(R.id.textView7);
 		
         
 //        imageView=(ImageView)findViewById(R.id.imageView1);
@@ -524,7 +587,20 @@ public class DeviceControlActivity extends Activity {
 			public void onClick(View v) {
 				flag = 5; //5代表陀螺仪传感器
 			}
-		});   
+		}); 
+		button7.setOnClickListener(new OnClickListener()  
+		{         
+			public void onClick(View v) {
+				flag = 6; //6代表气压传感器
+				
+			}
+		});
+		button8.setOnClickListener(new OnClickListener()  
+		{         
+			public void onClick(View v) {
+				flag = 7; //6代表气压传感器
+			}
+		});
 		//使用匿名类注册Button事件  
 		button3.setOnClickListener(new OnClickListener()  
 		{         
@@ -643,7 +719,41 @@ public class DeviceControlActivity extends Activity {
 						mBluetoothLeService.writeCharacteristic(gyrCharacteristic[2]);
 				
 					}
-				}			
+				}
+				else if(6 == flag)
+				{
+					if (barCharacteristic[1] != null) 
+					{
+						
+						byte[] data = new byte[1];
+						data[0] = 2;  
+						barCharacteristic[1].setValue(data);
+						mBluetoothLeService.writeCharacteristic(barCharacteristic[1]);
+		
+					}
+					
+				}
+				else if(7 == flag)
+				{
+					if (barCharacteristic[1] != null) 
+					{
+						
+						byte[] data = new byte[1];
+						data[0] = 1;  
+						barCharacteristic[1].setValue(data);
+						mBluetoothLeService.writeCharacteristic(barCharacteristic[1]);
+		
+					}
+					if (barCharacteristic[3] != null) 
+					{
+		
+						byte[] data = new byte[2];
+						data[0] = 100;
+						barCharacteristic[3].setValue(data);
+						mBluetoothLeService.writeCharacteristic(barCharacteristic[3]);
+				
+					}
+				}
 				
 			
 			}
@@ -838,6 +948,38 @@ public class DeviceControlActivity extends Activity {
 					}
 					if(uuid.equals(UUID_GYR_PERI.toString())){                	
 						gyrCharacteristic[2] = gattCharacteristic;
+						//Log.i("sunzhan", "read out");
+					}
+				}
+				else if(6 == flag)
+				{
+					
+					if(uuid.equals(UUID_BAR_CONF.toString())){                	
+						barCharacteristic[1] = gattCharacteristic;
+						//Log.i("sunzhan", "read out");
+					}
+					if(uuid.equals(UUID_BAR_CALI.toString())){                	
+						barCharacteristic[2] = gattCharacteristic;
+						//Log.i("sunzhan", "read out");
+					}
+					if(uuid.equals(UUID_BAR_PERI.toString())){                	
+						barCharacteristic[3] = gattCharacteristic;
+						//Log.i("sunzhan", "read out");
+					}
+				}
+				else if(7 == flag)
+				{
+					if(uuid.equals(UUID_BAR_DATA.toString())){                	
+						barCharacteristic[0] = gattCharacteristic;
+						Log.i("sunzhan", "read out"+String.valueOf(flag));
+						//Log.i("sunzhan", "read out");
+					}
+					if(uuid.equals(UUID_BAR_CONF.toString())){                	
+						barCharacteristic[1] = gattCharacteristic;
+						//Log.i("sunzhan", "read out");
+					}
+					if(uuid.equals(UUID_BAR_PERI.toString())){                	
+						barCharacteristic[3] = gattCharacteristic;
 						//Log.i("sunzhan", "read out");
 					}
 				}

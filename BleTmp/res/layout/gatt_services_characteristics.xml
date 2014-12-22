@@ -89,6 +89,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="陀螺仪" />
+    <Button
+        android:id="@+id/button7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="气压校正" />
+    <Button
+        android:id="@+id/button8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="气压显示" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -129,6 +139,12 @@
         android:layout_width="297dp"
         android:layout_height="156dp"
         android:text="gyr"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+       <TextView
+        android:id="@+id/textView7"
+        android:layout_width="297dp"
+        android:layout_height="156dp"
+        android:text="bar"
         android:textAppearance="?android:attr/textAppearanceLarge" />
      </LinearLayout>
     
